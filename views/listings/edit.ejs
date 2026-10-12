@@ -1,0 +1,133 @@
+<% layout("/layouts/boilerplate") %>
+
+<section class="listing-form-shell">
+  <header class="listing-form-heading">
+    <p class="eyebrow">Keep your place up to date</p>
+    <h1>Edit your listing</h1>
+    <p>Update the details guests see when they discover your place.</p>
+  </header>
+
+  <form
+    method="POST"
+    action="/listings/<%= listing._id %>?_method=PUT"
+    enctype="multipart/form-data"
+    novalidate
+    class="needs-validation listing-editor"
+  >
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <section class="editor-section">
+      <h2>Your photos</h2>
+      <p class="text-muted">Select photos to remove, or add up to 8 JPG, PNG, or WebP images (8 MB each). Large photos are optimized in your browser before upload.</p>
+      <div class="existing-photo-grid">
+        <% if (listingImages.length > 0) { %>
+          <% listingImages.forEach((image, index) => { %>
+            <label class="existing-photo">
+              <img src="<%= image.url %>" alt="Listing photo <%= index + 1 %>" loading="lazy" />
+              <span class="existing-photo-remove">
+                <input type="checkbox" name="listing[removeImages]" value="<%= index %>" />
+                Remove photo
+              </span>
+            </label>
+          <% }) %>
+        <% } else { %>
+          <p class="text-muted">No photos have been added yet.</p>
+        <% } %>
+      </div>
+      <div class="photo-upload-zone mt-3" data-upload-zone>
+        <input
+          class="visually-hidden"
+          id="listingImages"
+          name="listing[images]"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          data-image-input
+        />
+        <div class="photo-upload-prompt">
+          <span class="photo-upload-icon" aria-hidden="true"><i class="fa-regular fa-images"></i></span>
+          <strong>Add more photos</strong>
+          <span>Drag and drop or choose up to 8 photos</span>
+          <label class="btn btn-outline-dark rounded-pill px-4" for="listingImages">Choose photos</label>
+          <span class="small text-muted" data-image-count>No new photos selected</span>
+        </div>
+      </div>
+      <p class="form-text text-danger" role="status" data-upload-error></p>
+      <div class="photo-preview-grid" data-image-previews aria-live="polite"></div>
+    </section>
+
+    <section class="editor-section">
+      <h2>About this place</h2>
+      <div class="mb-3">
+        <label for="listingTitle" class="form-label">Title</label>
+        <input id="listingTitle" name="listing[title]" value="<%= listing.title %>" class="form-control" maxlength="120" minlength="3" required />
+        <div class="invalid-feedback">Add a title between 3 and 120 characters.</div>
+      </div>
+      <div class="mb-3">
+        <label for="listingDescription" class="form-label">Description</label>
+        <textarea id="listingDescription" name="listing[description]" class="form-control" rows="5" minlength="10" maxlength="5000" required><%= listing.description %></textarea>
+        <div class="invalid-feedback">Add at least 10 characters describing your place.</div>
+      </div>
+      <div class="row">
+        <div class="mb-3 col-md-6">
+          <label for="listingCategory" class="form-label">Category</label>
+          <select id="listingCategory" name="listing[category]" class="form-select" required>
+            <% for (const category of ["Homes", "Experiences", "Services"]) { %>
+              <option value="<%= category %>" <%= listing.category === category ? "selected" : "" %>><%= category %></option>
+            <% } %>
+          </select>
+        </div>
+        <div class="mb-3 col-md-6">
+          <label for="listingType" class="form-label">Type</label>
+          <select id="listingType" name="listing[type]" class="form-select">
+            <option value="">Choose a type (optional)</option>
+            <% for (const type of ["Beach", "Heritage", "Lake", "Camping", "Countryside", "Amazing Pools", "Mountains", "Culture", "Food", "Nature", "Chef", "Photography", "Transport", "Wellness"]) { %>
+              <option value="<%= type %>" <%= listing.type === type ? "selected" : "" %>><%= type %></option>
+            <% } %>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="editor-section">
+      <h2>Location and pricing</h2>
+      <div class="row">
+        <div class="mb-3 col-md-8">
+          <label for="listingLocation" class="form-label">Location</label>
+          <input id="listingLocation" name="listing[location]" value="<%= listing.location %>" class="form-control" required />
+        </div>
+        <div class="mb-3 col-md-4">
+          <label for="listingCountry" class="form-label">Country</label>
+          <input id="listingCountry" name="listing[country]" value="<%= listing.country %>" class="form-control" required />
+        </div>
+      </div>
+      <div class="row">
+        <div class="mb-3 col-md-6">
+          <label for="listingCity" class="form-label">City</label>
+          <input id="listingCity" name="listing[city]" value="<%= listing.city || '' %>" class="form-control" />
+        </div>
+        <div class="mb-3 col-md-6">
+          <label for="listingState" class="form-label">State or region</label>
+          <input id="listingState" name="listing[state]" value="<%= listing.state || '' %>" class="form-control" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="mb-3 col-md-6">
+          <label for="listingPrice" class="form-label">Price (INR)</label>
+          <input id="listingPrice" name="listing[price]" value="<%= listing.price %>" type="number" min="0" step="1" class="form-control" required />
+        </div>
+        <div class="mb-3 col-md-6">
+          <label for="listingPriceUnit" class="form-label">Price applies per</label>
+          <select id="listingPriceUnit" name="listing[priceUnit]" class="form-select" required>
+            <% for (const unit of ["night", "person", "service"]) { %>
+              <option value="<%= unit %>" <%= listing.priceUnit === unit ? "selected" : "" %>><%= unit.charAt(0).toUpperCase() + unit.slice(1) %></option>
+            <% } %>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <button class="btn btn-dark rounded-pill px-5 py-2" type="submit">Save changes</button>
+  </form>
+</section>
+
+<script src="/js/image-upload.js"></script>

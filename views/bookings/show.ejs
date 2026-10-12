@@ -1,0 +1,115 @@
+<% layout("/layouts/boilerplate") %>
+<%
+  const bookingDate = (date) => new Date(date).toLocaleDateString("en-IN", {
+    timeZone: "UTC",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  const total = (booking.priceSnapshot.subtotalMinor / 100).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  const expiresAt = new Date(booking.paymentExpiresAt).toLocaleTimeString("en-IN", {
+    timeZone: "UTC",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  });
+  const statusMessages = {
+    PENDING_PAYMENT: `Your dates are held until ${expiresAt}. The booking is not confirmed until the payment provider verifies capture.`,
+    PAYMENT_PROCESSING: "Payment is being reconciled. Do not start another payment; this booking is not confirmed yet.",
+    CONFIRMED: "Your booking is confirmed.",
+    PAYMENT_FAILED: "This booking did not proceed. It is not confirmed.",
+    EXPIRED: "The 10-minute hold expired and the dates have been released. Check availability again to try a new booking.",
+    CANCELLED: "This booking was cancelled and its dates were released.",
+    REFUND_REQUIRED: "Payment was received, but the stay could not be confirmed. Contact support for payment reconciliation. No refund is claimed until the provider confirms one.",
+    COMPLETED: "This stay is marked as completed.",
+  };
+%>
+
+<main class="booking-status-page">
+  <div class="booking-detail-links">
+    <a class="booking-back-link" href="/dashboard">My trips</a>
+    <% if (listing) { %>
+      <a class="booking-back-link" href="/listings/<%= listing._id %>">View listing</a>
+    <% } else { %>
+      <span class="booking-listing-unavailable">This listing is no longer available.</span>
+    <% } %>
+  </div>
+  <section class="booking-status-card" aria-labelledby="bookingStatusHeading">
+    <div class="booking-detail-heading">
+      <div>
+        <p class="eyebrow">Booking <%= booking.bookingReference %></p>
+        <h1 id="bookingStatusHeading">
+          <%= booking.status === "PENDING_PAYMENT" ? "Dates held temporarily" : booking.status === "EXPIRED" ? "Date hold expired" : booking.status === "CANCELLED" ? "Booking cancelled" : booking.status.replaceAll("_", " ") %>
+        </h1>
+      </div>
+      <span class="guest-trip-status guest-trip-status-<%= booking.status.toLowerCase().replaceAll("_", "-") %>"><%= booking.status.replaceAll("_", " ") %></span>
+    </div>
+    <p class="booking-status-message"><%= statusMessages[booking.status] || "See the current status for this booking." %></p>
+    <% if (booking.status === "PENDING_PAYMENT" && payment?.failureCode === "provider_rejected") { %>
+      <p class="payment-checkout-message is-error" role="status">The provider rejected the order request. No payment was taken; you may retry or contact support if it continues.</p>
+    <% } else if (booking.status === "PENDING_PAYMENT" && payment?.failureCode) { %>
+      <p class="payment-checkout-message" role="status">The provider reported an unsuccessful attempt. The booking is still unconfirmed; you may retry payment while the hold is active.</p>
+    <% } %>
+    <% if (checkoutReconciling) { %>
+      <p class="payment-checkout-message" role="status">Order creation is being reconciled. Please contact support before trying to create another payment.</p>
+    <% } %>
+    <% if (paymentCapturedPendingConfirmation) { %>
+      <p class="payment-checkout-message" role="status">The provider reports a captured payment. Booking confirmation is being reconciled; do not pay again. Contact support if this status does not update.</p>
+    <% } %>
+    <% if (booking.status === "CONFIRMED" && payment?.status === "REFUND_REQUIRED") { %>
+      <p class="payment-checkout-message" role="status">Your stay remains confirmed, but an additional captured payment requires reconciliation. Contact support; do not make another payment.</p>
+    <% } %>
+
+    <div class="booking-detail-listing">
+      <img src="<%= listingImageUrl %>" alt="<%= listing ? listing.title : booking.listingSnapshot.title %>" />
+      <div>
+        <h2><%= listing ? listing.title : booking.listingSnapshot.title %></h2>
+        <p><%= listing ? listing.location : booking.listingSnapshot.location %></p>
+      </div>
+    </div>
+
+    <div class="booking-status-details">
+      <h2>Your stay</h2>
+      <dl>
+        <div><dt>Check-in</dt><dd><%= bookingDate(booking.checkIn) %></dd></div>
+        <div><dt>Check-out</dt><dd><%= bookingDate(booking.checkOut) %></dd></div>
+        <div><dt>Length of stay</dt><dd><%= booking.priceSnapshot.nights %> <%= booking.priceSnapshot.nights === 1 ? "night" : "nights" %></dd></div>
+        <div><dt>Guests</dt><dd><%= booking.guests %></dd></div>
+      </dl>
+    </div>
+
+    <div class="booking-price-breakdown">
+      <h2>Price snapshot</h2>
+      <div class="booking-price-line">
+        <span>₹<%= (booking.priceSnapshot.unitPriceMinor / 100).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %> × <%= booking.priceSnapshot.quantity %> <%= booking.priceSnapshot.priceUnit === "night" ? (booking.priceSnapshot.quantity === 1 ? "night" : "nights") : booking.priceSnapshot.priceUnit === "person" ? (booking.priceSnapshot.quantity === 1 ? "guest" : "guests") : "service" %></span>
+        <strong>₹<%= total %></strong>
+      </div>
+      <div class="booking-price-line booking-total">
+        <span>Subtotal</span>
+        <strong>₹<%= total %></strong>
+      </div>
+      <p class="booking-status-footnote">This is the server-calculated amount saved when the booking was created. No additional taxes or fees are included.</p>
+    </div>
+
+    <% if (checkoutAvailable) { %>
+      <section class="payment-checkout" aria-label="Secure payment">
+        <p>Pay the saved total of <strong>₹<%= total %></strong> using Razorpay Checkout. The booking is confirmed only after server-side payment verification.</p>
+        <button class="btn btn-dark rounded-pill w-100" type="button" data-payment-checkout data-booking-id="<%= booking._id %>">Pay and confirm booking</button>
+        <p class="payment-checkout-message" data-payment-message role="status" aria-live="polite"></p>
+      </section>
+      <script src="/js/payment-checkout.js"></script>
+    <% } else if (booking.status === "PENDING_PAYMENT" && !paymentCheckoutEnabled && !checkoutReconciling && !paymentCapturedPendingConfirmation) { %>
+      <p class="booking-status-footnote">Online payment is not configured. This booking cannot be confirmed while payment setup is unavailable.</p>
+    <% } %>
+
+    <% if (canCancel) { %>
+      <form class="booking-detail-cancel" method="POST" action="/bookings/<%= booking._id %>/cancel" data-confirm="Your 10-minute date hold will be cancelled and those dates released." data-confirm-title="Cancel this date hold?" data-confirm-label="Cancel hold">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <button class="btn btn-outline-danger rounded-pill" type="submit">Cancel date hold</button>
+      </form>
+    <% } %>
+  </section>
+</main>

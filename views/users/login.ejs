@@ -1,0 +1,60 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="mt-4 mb-5">
+  <div
+    class="card border-0 shadow-sm rounded-4 mx-auto"
+    style="max-width: 480px"
+  >
+    <div class="card-body p-4 p-sm-5">
+      <h2 class="fw-bold text-center mb-4">Welcome back</h2>
+
+      <form method="POST" action="/login" novalidate class="needs-validation">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <div class="mb-3">
+          <label for="username" class="form-label fw-semibold fs-7"
+            >Username</label
+          >
+          <input
+            id="username"
+            name="username"
+            placeholder="Enter your username"
+            type="text"
+            class="form-control auth-input py-2 px-3 rounded-3"
+            autocomplete="username"
+            required
+          />
+        </div>
+
+        <div class="mb-4">
+          <label for="password" class="form-label fw-semibold fs-7"
+            >Password</label
+          >
+          <input
+            id="password"
+            name="password"
+            placeholder="Enter your password"
+            type="password"
+            class="form-control auth-input py-2 px-3 rounded-3"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+
+        <button
+          class="btn add-btn text-white w-100 rounded-pill py-2 fw-bold fs-6 mb-3"
+        >
+          Log in
+        </button>
+
+        <div class="text-center mt-3">
+          <span class="text-muted fs-7">Don't have an account?</span>
+          <a
+            href="/signup"
+            class="text-dark fw-bold text-decoration-none fs-7 ms-1 hover-underline"
+            >Sign up</a
+          >
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

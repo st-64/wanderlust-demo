@@ -1,0 +1,62 @@
+<% layout("/layouts/boilerplate") %>
+
+<main class="host-dashboard" aria-labelledby="hostListingsHeading">
+  <header class="host-page-header">
+    <div>
+      <p class="eyebrow">Hosting on Wanderlust</p>
+      <h1 id="hostListingsHeading">My listings</h1>
+      <p><%= totalListings %> listing<%= totalListings === 1 ? "" : "s" %> owned by you.</p>
+    </div>
+    <a class="btn btn-dark rounded-pill px-4" href="/listings/new">Create a listing</a>
+  </header>
+
+  <% if (listings.length === 0) { %>
+    <section class="host-empty-state">
+      <i class="fa-regular fa-compass" aria-hidden="true"></i>
+      <h2>You have not created a listing yet</h2>
+      <p>Share a place, experience, or service with Wanderlust guests.</p>
+      <a class="btn btn-dark rounded-pill px-4" href="/listings/new">Create your first listing</a>
+    </section>
+  <% } else { %>
+    <section class="host-listing-grid" aria-label="Your listings">
+      <% listings.forEach((listing) => { %>
+        <article class="host-listing-card">
+          <a class="host-listing-image" href="/listings/<%= listing._id %>" aria-label="View <%= listing.title %>">
+            <img src="<%= listing.coverImageUrl %>" alt="<%= listing.title %>" loading="lazy" />
+          </a>
+          <div class="host-listing-body">
+            <div class="host-listing-heading">
+              <div>
+                <span class="host-category-badge"><%= listing.category || "Homes" %><%= listing.type ? ` · ${listing.type}` : "" %></span>
+                <h2><a href="/listings/<%= listing._id %>"><%= listing.title %></a></h2>
+                <p><%= listing.location %><%= listing.country ? `, ${listing.country}` : "" %></p>
+              </div>
+              <strong>₹<%= listing.price.toLocaleString("en-IN") %> / <%= listing.priceUnit === "person" ? "person" : listing.priceUnit === "service" ? "service" : "night" %></strong>
+            </div>
+            <div class="host-listing-actions">
+              <a class="btn btn-outline-dark rounded-pill" href="/listings/<%= listing._id %>">View</a>
+              <a class="btn btn-outline-dark rounded-pill" href="/listings/<%= listing._id %>/edit">Edit</a>
+              <a class="btn btn-outline-dark rounded-pill" href="/host/reservations?status=all">Reservations</a>
+              <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" data-confirm="This will permanently remove the listing and cannot be undone." data-confirm-title="Delete this listing?" data-confirm-label="Delete listing">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <button class="btn btn-outline-danger rounded-pill" type="submit">Delete</button>
+              </form>
+            </div>
+          </div>
+        </article>
+      <% }); %>
+    </section>
+
+    <% if (totalPages > 1) { %>
+      <nav class="listing-pagination" aria-label="Your listing pages">
+        <% if (page > 1) { %>
+          <a class="btn btn-outline-dark rounded-pill" href="/host/listings?page=<%= page - 1 %>" rel="prev">Previous</a>
+        <% } %>
+        <span>Page <strong><%= page %></strong> of <%= totalPages %></span>
+        <% if (page < totalPages) { %>
+          <a class="btn btn-outline-dark rounded-pill" href="/host/listings?page=<%= page + 1 %>" rel="next">Next</a>
+        <% } %>
+      </nav>
+    <% } %>
+  <% } %>
+</main>

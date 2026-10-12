@@ -1,0 +1,21 @@
+<div class="action-confirmation-backdrop" data-confirmation-backdrop hidden>
+  <section
+    class="action-confirmation-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="actionConfirmationTitle"
+    aria-describedby="actionConfirmationMessage"
+    tabindex="-1"
+    data-confirmation-dialog
+  >
+    <div class="action-confirmation-icon" aria-hidden="true">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+    </div>
+    <h2 id="actionConfirmationTitle" data-confirmation-title>Are you sure?</h2>
+    <p id="actionConfirmationMessage" data-confirmation-message>This action cannot be undone.</p>
+    <div class="action-confirmation-actions">
+      <button class="btn btn-light rounded-pill" type="button" data-confirmation-cancel>Go back</button>
+      <button class="btn btn-danger rounded-pill" type="button" data-confirmation-accept>Continue</button>
+    </div>
+  </section>
+</div>

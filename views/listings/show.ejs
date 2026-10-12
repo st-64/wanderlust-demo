@@ -1,0 +1,290 @@
+<% layout("/layouts/boilerplate") %>
+<%
+  const photoCount = listingImages.length;
+  const photoLayout = photoCount === 1 ? "photo-count-one" : photoCount === 2 ? "photo-count-two" : photoCount === 3 ? "photo-count-three" : photoCount === 4 ? "photo-count-four" : photoCount > 4 ? "photo-count-many" : "photo-count-empty";
+  const priceUnitLabel = listing.priceUnit === "person" ? "person" : listing.priceUnit === "service" ? "service" : "night";
+  const hostName = listing.owner ? (listing.owner.fullName || listing.owner.username) : "Wanderlust host";
+  const reviewEntries = listing.reviews.filter((review) => review && review.author);
+%>
+
+<main class="listing-page-shell">
+  <header class="listing-show-header">
+    <div>
+      <h1><%= listing.title %></h1>
+      <div class="listing-show-meta">
+        <% if (averageRating) { %>
+          <span><i class="fa-solid fa-star" aria-hidden="true"></i> <strong><%= averageRating %></strong></span>
+          <a href="#reviews"><%= reviewCount %> review<%= reviewCount === 1 ? "" : "s" %></a>
+          <span aria-hidden="true">·</span>
+        <% } else { %>
+          <span class="new-listing-label">New listing</span>
+          <span aria-hidden="true">·</span>
+        <% } %>
+        <a href="#location"><%= listing.location %>, <%= listing.country %></a>
+      </div>
+    </div>
+    <div class="listing-show-actions">
+      <button class="listing-text-action" type="button" data-share-listing>
+        <i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i> Share
+      </button>
+      <% if (currUser && listing.owner && currUser._id.equals(listing.owner._id)) { %>
+        <a class="listing-text-action" href="/listings/<%= listing._id %>/edit">
+          <i class="fa-regular fa-pen-to-square" aria-hidden="true"></i> Edit listing
+        </a>
+        <form class="listing-delete-form" method="POST" action="/listings/<%= listing._id %>?_method=DELETE" data-confirm="This will permanently remove the listing and cannot be undone." data-confirm-title="Delete this listing?" data-confirm-label="Delete listing">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <button class="listing-text-action listing-delete-action" type="submit">
+            <i class="fa-regular fa-trash-can" aria-hidden="true"></i> Delete listing
+          </button>
+        </form>
+      <% } %>
+    </div>
+  </header>
+
+  <section id="photos" class="listing-photo-gallery <%= photoLayout %>" aria-label="Photos of <%= listing.title %>">
+    <% listingImages.slice(0, 5).forEach((image, index) => { %>
+      <button
+        class="listing-photo-tile <%= index === 0 ? 'listing-photo-main' : '' %>"
+        type="button"
+        data-open-photo="<%= index %>"
+        aria-label="Open photo <%= index + 1 %> of <%= photoCount %>"
+      >
+        <img
+          src="<%= image.url %>"
+          alt="<%= listing.title %> — photo <%= index + 1 %>"
+          loading="<%= index === 0 ? 'eager' : 'lazy' %>"
+          decoding="async"
+        />
+        <% if (index === 4 && photoCount > 5) { %>
+          <span class="show-all-photos"><i class="fa-solid fa-grip" aria-hidden="true"></i> Show all <%= photoCount %> photos</span>
+        <% } %>
+        <% if (photoCount === 1) { %>
+          <span class="show-all-photos"><i class="fa-solid fa-expand" aria-hidden="true"></i> View photo</span>
+        <% } %>
+      </button>
+    <% }) %>
+    <% if (photoCount === 0) { %>
+      <div class="listing-photo-empty">Photos for this place are coming soon.</div>
+    <% } %>
+  </section>
+
+  <nav class="listing-section-nav" aria-label="Listing sections">
+    <a href="#photos">Photos</a>
+    <a href="#details">Details</a>
+    <a href="#reviews">Reviews</a>
+    <a href="#location">Location</a>
+    <span class="listing-nav-price">₹<%= listing.price.toLocaleString("en-IN") %> / <%= priceUnitLabel %></span>
+  </nav>
+
+  <div class="listing-content-grid">
+    <div class="listing-primary-content">
+      <section id="details" class="listing-intro-section">
+        <div>
+          <p class="eyebrow"><%= listing.category || "Homes" %><%= listing.type ? ` · ${listing.type}` : "" %></p>
+          <h2><%= listing.category === "Experiences" ? "Experience in" : listing.category === "Services" ? "Service in" : "Stay in" %> <%= listing.city || listing.location %></h2>
+          <p class="listing-place-line"><%= listing.location %>, <%= listing.country %></p>
+        </div>
+        <div class="listing-price-summary">
+          <strong>₹<%= listing.price.toLocaleString("en-IN") %></strong>
+          <span>/ <%= priceUnitLabel %></span>
+        </div>
+      </section>
+
+      <section class="host-summary-card" aria-label="Listing host">
+        <a class="host-avatar-link" href="<%= listing.owner ? `/user/${listing.owner._id}` : '/listings' %>" aria-label="View host profile">
+          <% if (listing.owner && listing.owner.profileImage && listing.owner.profileImage.url) { %>
+            <img src="<%= listing.owner.profileImage.url %>" alt="" class="host-avatar" data-avatar-image data-avatar-initial="<%= hostName.charAt(0).toUpperCase() %>" data-avatar-fallback-class="host-avatar host-avatar-fallback" />
+          <% } else { %>
+            <span class="host-avatar host-avatar-fallback" aria-hidden="true"><%= hostName.charAt(0).toUpperCase() %></span>
+          <% } %>
+        </a>
+        <div>
+          <h2>Hosted by <%= hostName %></h2>
+          <p>Wanderlust host</p>
+        </div>
+        <% if (currUser && listing.owner && currUser._id.equals(listing.owner._id)) { %>
+          <a class="btn btn-outline-dark rounded-pill ms-auto" href="/listings/<%= listing._id %>/edit">Manage listing</a>
+        <% } %>
+      </section>
+
+      <section class="listing-description-section">
+        <h2>About this place</h2>
+        <p><%= listing.description %></p>
+      </section>
+
+      <section id="reviews" class="listing-reviews-section">
+        <div class="reviews-heading">
+          <div>
+            <h2>
+              <% if (averageRating) { %>
+                <i class="fa-solid fa-star" aria-hidden="true"></i> <%= averageRating %>
+                <span aria-hidden="true">·</span> <%= reviewCount %> review<%= reviewCount === 1 ? "" : "s" %>
+              <% } else { %>
+                Guest reviews
+              <% } %>
+            </h2>
+            <p><%= averageRating ? "What guests who stayed here shared" : "Be the first to share your experience." %></p>
+          </div>
+        </div>
+
+        <% if (reviewEntries.length > 0) { %>
+          <div class="listing-review-grid">
+            <% reviewEntries.forEach((review, index) => { %>
+              <article class="listing-review-card <%= index >= 6 ? 'review-card-hidden' : '' %>" data-review-card>
+                <header class="review-author">
+                  <% const reviewerName = review.author.fullName || review.author.username; %>
+                  <% if (review.author.profileImage && review.author.profileImage.url) { %>
+                    <img class="review-avatar" src="<%= review.author.profileImage.url %>" alt="" loading="lazy" data-avatar-image data-avatar-initial="<%= reviewerName.charAt(0).toUpperCase() %>" data-avatar-fallback-class="review-avatar" />
+                  <% } else { %>
+                    <span class="review-avatar" aria-hidden="true"><%= reviewerName.charAt(0).toUpperCase() %></span>
+                  <% } %>
+                  <div>
+                    <h3><%= review.author.fullName || review.author.username %></h3>
+                    <p><%= review.createdAt ? review.createdAt.toLocaleDateString("en-IN", { month: "long", year: "numeric" }) : "Guest" %></p>
+                  </div>
+                </header>
+                <p class="review-stars" aria-label="<%= review.rating %> out of 5 stars">
+                  <% for (let star = 1; star <= 5; star++) { %>
+                    <i class="fa-<%= star <= review.rating ? 'solid' : 'regular' %> fa-star" aria-hidden="true"></i>
+                  <% } %>
+                </p>
+                <p class="review-comment" data-review-comment><%= review.comment %></p>
+                <button class="review-more-button" type="button" data-review-more hidden>Show more</button>
+                <% if (currUser && currUser._id.equals(review.author._id)) { %>
+                  <form method="POST" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <button class="review-delete-button" type="submit">Delete your review</button>
+                  </form>
+                <% } %>
+              </article>
+            <% }) %>
+          </div>
+          <% if (reviewEntries.length > 6) { %>
+            <button class="btn btn-outline-dark rounded-pill px-4 mt-4" type="button" data-show-reviews>
+              Show all <%= reviewEntries.length %> reviews
+            </button>
+          <% } %>
+        <% } else { %>
+          <div class="review-empty-state">
+            <i class="fa-regular fa-comment-dots" aria-hidden="true"></i>
+            <p>No reviews yet. Your stay could be the first story guests share.</p>
+          </div>
+        <% } %>
+
+        <% if (currUser) { %>
+          <div class="write-review-card">
+            <h3>Share your experience</h3>
+            <p>Your review helps other guests know what to expect.</p>
+            <form action="/listings/<%= listing._id %>/reviews" method="POST" novalidate class="needs-validation">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <fieldset class="mb-3">
+                <legend class="form-label">Your rating</legend>
+                <div class="starability-slot">
+                  <input type="radio" id="no-rate-<%= listing._id %>" class="input-no-rate" name="review[rating]" value="1" checked aria-label="1 star" />
+                  <% for (let rating = 1; rating <= 5; rating++) { %>
+                    <input type="radio" id="rate-<%= listing._id %>-<%= rating %>" name="review[rating]" value="<%= rating %>" <%= rating === 1 ? "required" : "" %> />
+                    <label for="rate-<%= listing._id %>-<%= rating %>" title="<%= rating %> stars"><%= rating %> star<%= rating === 1 ? "" : "s" %></label>
+                  <% } %>
+                </div>
+              </fieldset>
+              <div class="mb-3">
+                <label for="reviewComment" class="form-label">Your review</label>
+                <textarea id="reviewComment" name="review[comment]" rows="4" class="form-control" minlength="2" maxlength="2000" required></textarea>
+                <div class="invalid-feedback">Please write at least 2 characters.</div>
+              </div>
+              <button class="btn btn-dark rounded-pill px-4" type="submit">Post review</button>
+            </form>
+          </div>
+        <% } else { %>
+          <p class="review-login-note"><a href="/login">Log in</a> to share your review.</p>
+        <% } %>
+      </section>
+
+      <section id="location" class="listing-location-section-show">
+        <h2>Where you'll be</h2>
+        <p><%= listing.location %>, <%= listing.country %></p>
+        <% if (mapToken) { %>
+          <div
+            id="map"
+            data-token="<%= mapToken %>"
+            data-geometry="<%= JSON.stringify(listing.geometry) %>"
+            data-title="<%= listing.title %>"
+            role="img"
+            aria-label="Map showing the approximate location of <%= listing.title %>"
+          ></div>
+        <% } else { %>
+          <div class="map-unavailable-note">Map location will appear when map service configuration is available.</div>
+        <% } %>
+      </section>
+    </div>
+
+    <aside class="listing-price-card" aria-label="Listing price">
+      <p>Price</p>
+      <p><strong>₹<%= listing.price.toLocaleString("en-IN") %></strong> / <%= priceUnitLabel %></p>
+      <form
+        class="booking-form"
+        method="POST"
+        action="/listings/<%= listing._id %>/bookings"
+        data-booking-form
+        data-availability-list-url="/listings/<%= listing._id %>/bookings/availability"
+        data-availability-url="/listings/<%= listing._id %>/bookings/availability"
+      >
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <div class="booking-date-fields">
+          <div>
+            <label for="bookingCheckIn-<%= listing._id %>">Check-in</label>
+            <input id="bookingCheckIn-<%= listing._id %>" name="booking[checkIn]" type="date" min="<%= todayDate %>" required aria-describedby="bookingDateHelp-<%= listing._id %>" />
+          </div>
+          <div>
+            <label for="bookingCheckOut-<%= listing._id %>">Check-out</label>
+            <input id="bookingCheckOut-<%= listing._id %>" name="booking[checkOut]" type="date" min="<%= todayDate %>" required aria-describedby="bookingDateHelp-<%= listing._id %>" />
+          </div>
+        </div>
+        <div class="booking-guest-field">
+          <label for="bookingGuests-<%= listing._id %>">Guests</label>
+          <input id="bookingGuests-<%= listing._id %>" name="booking[guests]" type="number" min="1" max="16" step="1" value="1" required />
+        </div>
+        <p class="booking-date-help" id="bookingDateHelp-<%= listing._id %>">Check-out must be after check-in. Listed ranges are unavailable if your stay overlaps them; check-out dates are not included.</p>
+        <section class="booking-unavailable-dates" data-unavailable-dates aria-live="polite">
+          <h2>Unavailable dates</h2>
+          <p data-unavailable-message>Loading dates for the next 12 months…</p>
+          <ul data-unavailable-ranges></ul>
+        </section>
+        <button class="btn btn-outline-dark rounded-pill w-100" type="button" data-check-availability>Check availability</button>
+        <p class="booking-form-message" data-booking-message role="status" aria-live="polite"></p>
+        <p class="booking-price-estimate" data-price-estimate hidden></p>
+        <button class="btn btn-dark rounded-pill w-100" type="submit" data-create-booking>
+          Hold these dates for 10 minutes
+        </button>
+        <p class="booking-payment-note"><%= paymentCheckoutEnabled ? "A date hold lasts 10 minutes. Payment must be verified before a booking is confirmed." : "Online payment is not configured yet. A date hold is not a confirmed booking." %></p>
+      </form>
+      <% if (currUser && listing.owner && currUser._id.equals(listing.owner._id)) { %>
+        <a class="btn btn-dark rounded-pill w-100" href="/listings/<%= listing._id %>/edit">Edit your listing</a>
+      <% } %>
+    </aside>
+  </div>
+</main>
+
+<% if (photoCount > 0) { %>
+  <div class="modal fade" id="listingPhotoModal" tabindex="-1" aria-labelledby="listingPhotoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content listing-gallery-modal">
+        <div class="modal-header border-0">
+          <h2 class="modal-title fs-6" id="listingPhotoModalLabel"><%= listing.title %></h2>
+          <span class="gallery-position" data-gallery-position></span>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close photo gallery"></button>
+        </div>
+        <div class="modal-body">
+          <button class="gallery-arrow gallery-previous" type="button" data-gallery-previous aria-label="Previous photo"><i class="fa-solid fa-chevron-left"></i></button>
+          <img class="gallery-modal-image" src="<%= listingImages[0].url %>" alt="<%= listing.title %>" data-gallery-image />
+          <button class="gallery-arrow gallery-next" type="button" data-gallery-next aria-label="Next photo"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="application/json" id="listingGalleryData" nonce="<%= cspNonce %>"><%- JSON.stringify(listingImages.map((image) => ({ url: image.url, title: listing.title }))).replace(/</g, "\\u003c") %></script>
+<% } %>
+
+<% if (mapToken) { %><script src="/js/map.js"></script><% } %>
+<script src="/js/listing-show.js"></script>
+<script src="/js/booking-form.js"></script>

@@ -1,0 +1,65 @@
+<% layout("/layouts/boilerplate") %>
+<%
+  const dateLabel = (date) => new Date(date).toLocaleDateString("en-IN", {
+    timeZone: "UTC",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  const formatINR = (minorUnits) => (minorUnits / 100).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+%>
+
+<main class="host-reservation-detail" aria-labelledby="hostReservationHeading">
+  <a class="host-back-link" href="/host/reservations">← Back to reservations</a>
+  <section class="host-detail-card">
+    <header class="host-detail-header">
+      <div>
+        <p class="eyebrow">Reservation <%= reservation.bookingReference %></p>
+        <h1 id="hostReservationHeading"><%= reservation.listingTitle %></h1>
+        <p><%= reservation.listingLocation %></p>
+      </div>
+      <span class="host-status-badge host-status-<%= reservation.displayStatus.toLowerCase().replaceAll('_', '-') %>"><%= reservation.displayStatus.replaceAll("_", " ") %></span>
+    </header>
+    <% if (reservation.displayStatus === "REFUND_REQUIRED") { %>
+      <p class="host-detail-note">This stay is not confirmed. It is excluded from gross booking value while payment reconciliation is required.</p>
+    <% } %>
+
+    <div class="host-detail-grid">
+      <section class="host-detail-section">
+        <h2>Stay details</h2>
+        <dl>
+          <div><dt>Check-in</dt><dd><%= dateLabel(reservation.checkIn) %></dd></div>
+          <div><dt>Check-out</dt><dd><%= dateLabel(reservation.checkOut) %></dd></div>
+          <div><dt>Guests</dt><dd><%= reservation.guests %></dd></div>
+          <div><dt>Created</dt><dd><%= dateLabel(reservation.createdAt) %></dd></div>
+        </dl>
+      </section>
+
+      <section class="host-detail-section">
+        <h2>Guest</h2>
+        <% if (reservation.guest) { %>
+          <p><strong><%= reservation.guest.fullName || reservation.guest.username %></strong></p>
+          <% if (reservation.guest.username) { %><p>@<%= reservation.guest.username %></p><% } %>
+        <% } else { %>
+          <p>Guest account unavailable.</p>
+        <% } %>
+        <p class="host-detail-note">Guest email and other private account details are not shown here.</p>
+      </section>
+    </div>
+
+    <section class="host-detail-section host-price-snapshot">
+      <h2>Booking price snapshot</h2>
+      <div><span>₹<%= formatINR(reservation.priceSnapshot.unitPriceMinor) %> × <%= reservation.priceSnapshot.quantity %> <%= reservation.priceSnapshot.priceUnit %></span><strong>₹<%= formatINR(reservation.priceSnapshot.subtotalMinor) %></strong></div>
+      <p>Saved when the booking was created. This is gross booking value, not profit, payout, or a claim that payment was collected.</p>
+    </section>
+
+    <% if (!reservation.listing) { %>
+      <p class="host-detail-note">The original listing is no longer available. Saved booking details are shown above.</p>
+    <% } else { %>
+      <a class="btn btn-outline-dark rounded-pill" href="/listings/<%= reservation.listing._id %>">View listing</a>
+    <% } %>
+  </section>
+</main>

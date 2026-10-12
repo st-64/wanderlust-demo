@@ -1,0 +1,177 @@
+<!-- Smart Airbnb Two-Tier Navbar -->
+<nav class="airbnb-nav fixed-top border-bottom py-3 transition-all" id="main-navbar">
+    <div class="container-fluid px-4 px-lg-5 position-relative">
+
+        <!-- TOP ROW: Logo, Navigation Tabs/Pill, and Right Controls -->
+        <div class="d-flex justify-content-between align-items-center w-100 top-row-wrapper">
+
+            <!-- Left: Brand Logo -->
+            <div class="d-flex align-items-center nav-brand-wrapper">
+                <a href="/listings" class="navbar-brand d-flex align-items-center gap-2 text-decoration-none">
+                    <i class="fa-regular fa-compass fs-2 text-danger"></i>
+                    <span class="fs-5 fw-bold text-danger tracking-tight">wanderlust</span>
+                </a>
+            </div>
+
+            <!-- Center: Interactive Airbnb Navigation Tabs (Hidden on scroll) -->
+            <div class="center-tabs d-none d-lg-flex align-items-center justify-content-center gap-4 transition-all">
+                <% const isAll = (typeof currCategory === 'undefined' || !currCategory) ? 'active' : ''; %>
+                <% const isHomes = (typeof currCategory !== 'undefined' && currCategory === 'Homes') ? 'active' : ''; %>
+                <% const isExp = (typeof currCategory !== 'undefined' && currCategory === 'Experiences') ? 'active' : ''; %>
+                <% const isServ = (typeof currCategory !== 'undefined' && currCategory === 'Services') ? 'active' : ''; %>
+
+                <a href="/listings" class="nav-tab-item <%= isAll %> d-flex align-items-center gap-2 text-decoration-none pb-1">
+                    <i class="fa-solid fa-globe fs-6 <%= isAll ? 'text-dark' : 'text-muted' %>"></i>
+                    <span class="fs-7 <%= isAll ? 'text-dark fw-bold' : 'text-muted fw-medium' %>">All</span>
+                </a>
+                <a href="/listings?category=Homes" class="nav-tab-item <%= isHomes %> d-flex align-items-center gap-2 text-decoration-none pb-1">
+                    <i class="fa-solid fa-house fs-6 <%= isHomes ? 'text-dark' : 'text-muted' %>"></i>
+                    <span class="fs-7 <%= isHomes ? 'text-dark fw-bold' : 'text-muted fw-medium' %>">Homes</span>
+                </a>
+                <a href="/listings?category=Experiences" class="nav-tab-item <%= isExp %> d-flex align-items-center gap-2 text-decoration-none pb-1">
+                    <i class="fa-solid fa-mountain-sun fs-6 <%= isExp ? 'text-dark' : 'text-muted' %>"></i>
+                    <span class="fs-7 <%= isExp ? 'text-dark fw-bold' : 'text-muted fw-medium' %>">Experiences</span>
+                </a>
+                <a href="/listings?category=Services" class="nav-tab-item <%= isServ %> d-flex align-items-center gap-2 text-decoration-none pb-1">
+                    <i class="fa-solid fa-medal fs-6 <%= isServ ? 'text-dark' : 'text-muted' %>"></i>
+                    <span class="fs-7 <%= isServ ? 'text-dark fw-bold' : 'text-muted fw-medium' %>">Services</span>
+                </a>
+            </div>
+
+            <% if (typeof showSearch !== 'undefined' && showSearch) { %>
+                <form class="compact-search-pill shadow-sm rounded-pill px-3 py-2 align-items-center gap-2 bg-white border transition-all" method="GET" action="/listings" role="search">
+                    <i class="fa-solid fa-magnifying-glass fs-6 text-dark" aria-hidden="true"></i>
+                    <% if (currCategory) { %><input type="hidden" name="category" value="<%= currCategory %>" /><% } %>
+                    <% if (currType) { %><input type="hidden" name="type" value="<%= currType %>" /><% } %>
+                    <% if (currState) { %><input type="hidden" name="state" value="<%= currState %>" /><% } %>
+                    <% if (currCity) { %><input type="hidden" name="city" value="<%= currCity %>" /><% } %>
+                    <label class="visually-hidden" for="compactDestinationSearch">Search destinations</label>
+                    <input id="compactDestinationSearch" name="q" type="search" value="<%= searchQuery || '' %>" placeholder="Search places" autocomplete="off" />
+                    <button class="btn btn-danger rounded-circle d-flex align-items-center justify-content-center" type="submit" aria-label="Search listings">
+                        <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                    </button>
+                </form>
+            <% } %>
+
+            <!-- Right: Host & Profile Menu -->
+            <div class="d-none d-md-flex align-items-center gap-2 justify-content-end nav-user-wrapper">
+                <a href="/listings/new" class="fw-bold text-dark text-decoration-none fs-7 hover-bg-gray px-3 py-2 rounded-pill transition-all text-nowrap">Airbnb your home</a>
+
+                <div class="dropdown">
+                    <button class="user-profile-btn border rounded-pill py-1 px-2 d-flex align-items-center gap-2 hover-shadow cursor-pointer bg-white ms-1 transition-all" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Open account menu">
+                        <i class="fa-solid fa-bars fs-6 ms-2 text-dark" aria-hidden="true"></i>
+                        <% if (currUser && currUser.profileImage && currUser.profileImage.url) { %>
+                            <img class="nav-user-avatar" src="<%= currUser.profileImage.url %>" alt="" data-avatar-image data-avatar-initial="<%= (currUser.fullName || currUser.username).charAt(0).toUpperCase() %>" data-avatar-fallback-class="nav-user-avatar nav-user-avatar-fallback" />
+                        <% } else { %>
+                            <i class="fa-solid fa-circle-user fs-3 text-secondary" aria-hidden="true"></i>
+                        <% } %>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 rounded-4 py-2" style="min-width: 240px;">
+                        <% if(typeof currUser !== 'undefined' && currUser) { %>
+                            <li><a class="dropdown-item fw-bold py-2" href="/dashboard">My Trips</a></li>
+                            <li><a class="dropdown-item fw-bold py-2" href="/user/<%= currUser._id %>">Profile</a></li>
+                            <li><a class="dropdown-item py-2" href="/listings">Explore</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item fw-bold py-2" href="/host/dashboard">Host dashboard</a></li>
+                            <li><a class="dropdown-item py-2" href="/host/listings">My listings</a></li>
+                            <li><a class="dropdown-item py-2" href="/host/reservations">Reservations</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item py-2" href="/listings/new">Airbnb your home</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><form method="POST" action="/logout"><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><button class="dropdown-item py-2" type="submit">Log out</button></form></li>
+                        <% } else { %>
+                            <li><a class="dropdown-item fw-bold py-2" href="/signup">Sign up</a></li>
+                            <li><a class="dropdown-item py-2" href="/login">Log in</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item py-2" href="/listings/new">Airbnb your home</a></li>
+                        <% } %>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM ROW: Large Search Bar (Desktop only) -->
+        <% if (typeof showSearch !== 'undefined' && showSearch) { %>
+            <div class="bottom-search-row d-none d-md-flex justify-content-center w-100 mt-3 transition-all">
+                <form class="search-bar-large shadow-sm rounded-pill border d-flex align-items-center bg-white transition-all mx-auto" method="GET" action="/listings" role="search">
+                    <div class="search-section px-4 py-2 hover-bg-gray rounded-pill transition-all cursor-pointer overflow-hidden" style="flex: 1.3;">
+                        <div class="fw-bold text-dark" style="font-size: 0.75rem;">Where</div>
+                        <% if (currCategory) { %><input type="hidden" name="category" value="<%= currCategory %>" /><% } %>
+                        <% if (currType) { %><input type="hidden" name="type" value="<%= currType %>" /><% } %>
+                        <% if (currState) { %><input type="hidden" name="state" value="<%= currState %>" /><% } %>
+                        <% if (currCity) { %><input type="hidden" name="city" value="<%= currCity %>" /><% } %>
+                        <label class="visually-hidden" for="destinationSearch">Search destinations</label>
+                        <input id="destinationSearch" name="q" type="search" value="<%= searchQuery || '' %>" placeholder="Search destinations" class="border-0 bg-transparent p-0 fs-7 text-muted outline-none w-100 text-truncate" autocomplete="off">
+                    </div>
+                    <button class="btn btn-danger rounded-circle flex-shrink-0 d-flex align-items-center justify-content-center transition-all shadow-sm me-2" type="submit" aria-label="Search listings" style="width: 46px; height: 46px;">
+                            <i class="fa-solid fa-magnifying-glass text-white fs-6"></i>
+                    </button>
+                </form>
+            </div>
+        <% } %>
+    </div>
+</nav>
+
+<!-- Mobile Bottom Navigation Bar -->
+<div class="mobile-bottom-nav d-md-none fixed-bottom bg-white border-top d-flex justify-content-center gap-3 py-2 px-3 pb-3 transition-all" id="mobileNav">
+    <a href="/listings" class="text-decoration-none d-flex flex-column align-items-center text-danger text-nowrap">
+        <i class="fa-solid fa-magnifying-glass fs-5 mb-1"></i>
+        <span class="fs-8 fw-bold">Explore</span>
+    </a>
+
+    <% if(typeof currUser !== 'undefined' && currUser) { %>
+        <a href="/dashboard" class="text-decoration-none d-flex flex-column align-items-center text-muted hover-text-dark transition-all text-nowrap">
+            <i class="fa-solid fa-suitcase-rolling fs-5 mb-1" aria-hidden="true"></i>
+            <span class="fs-8">My Trips</span>
+        </a>
+        <a href="/host/dashboard" class="text-decoration-none d-flex flex-column align-items-center text-muted hover-text-dark transition-all text-nowrap">
+            <i class="fa-solid fa-house-user fs-5 mb-1" aria-hidden="true"></i>
+            <span class="fs-8">Hosting</span>
+        </a>
+        <a href="/user/<%= currUser._id %>" class="text-decoration-none d-flex flex-column align-items-center text-muted hover-text-dark transition-all text-nowrap">
+            <% if (currUser.profileImage && currUser.profileImage.url) { %>
+                <img class="mobile-profile-avatar mb-1" src="<%= currUser.profileImage.url %>" alt="" data-avatar-image data-avatar-initial="<%= (currUser.fullName || currUser.username).charAt(0).toUpperCase() %>" data-avatar-fallback-class="mobile-profile-avatar mobile-profile-avatar-fallback" />
+            <% } else { %>
+                <i class="fa-regular fa-circle-user fs-5 mb-1" aria-hidden="true"></i>
+            <% } %>
+            <span class="fs-8">Profile</span>
+        </a>
+    <% } else { %>
+        <a href="/login" class="text-decoration-none d-flex flex-column align-items-center text-muted hover-text-dark transition-all">
+            <i class="fa-solid fa-arrow-right-to-bracket fs-5 mb-1"></i>
+            <span class="fs-8">Log in</span>
+        </a>
+        <a href="/signup" class="text-decoration-none d-flex flex-column align-items-center text-muted hover-text-dark transition-all">
+            <i class="fa-solid fa-user-plus fs-5 mb-1"></i>
+            <span class="fs-8">Sign up</span>
+        </a>
+    <% } %>
+</div>
+
+<!-- Scroll & Hide Animation Script -->
+<script nonce="<%= cspNonce %>">
+    document.addEventListener("DOMContentLoaded", () => {
+        const nav = document.getElementById("main-navbar");
+        const mobileNav = document.getElementById("mobileNav");
+        let lastScrollY = window.scrollY;
+
+        window.addEventListener("scroll", () => {
+            let currentScrollY = window.scrollY;
+
+            if (nav && currentScrollY > 50) {
+                nav.classList.add("scrolled");
+            } else if (nav) {
+                nav.classList.remove("scrolled");
+            }
+
+            if (mobileNav) {
+                if (currentScrollY > lastScrollY && currentScrollY > 80) {
+                    mobileNav.classList.add("nav-hidden");
+                } else {
+                    mobileNav.classList.remove("nav-hidden");
+                }
+            }
+            lastScrollY = currentScrollY;
+        });
+    });
+</script>

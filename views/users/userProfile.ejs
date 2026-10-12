@@ -1,0 +1,63 @@
+<% layout("/layouts/boilerplate") %>
+
+<main class="profile-page">
+  <section class="profile-hero">
+    <div class="profile-identity">
+      <% if (profileUser.profileImage && profileUser.profileImage.url) { %>
+        <img class="profile-avatar" src="<%= profileUser.profileImage.url %>" alt="<%= profileUser.fullName || profileUser.username %>" data-avatar-image data-avatar-initial="<%= (profileUser.fullName || profileUser.username).charAt(0).toUpperCase() %>" data-avatar-fallback-class="profile-avatar profile-avatar-fallback" />
+      <% } else { %>
+        <span class="profile-avatar profile-avatar-fallback" aria-hidden="true"><%= (profileUser.fullName || profileUser.username).charAt(0).toUpperCase() %></span>
+      <% } %>
+      <div>
+        <p class="eyebrow">Wanderlust member</p>
+        <h1><%= profileUser.fullName || profileUser.username %></h1>
+        <p class="profile-member-since">Member since <%= profileUser.createdAt ? profileUser.createdAt.toLocaleDateString("en-IN", { month: "long", year: "numeric" }) : "recently" %></p>
+      </div>
+    </div>
+    <% if (isOwnProfile) { %>
+      <div class="profile-contact">
+        <p><span class="text-muted">Username</span><br /><strong>@<%= profileUser.username %></strong></p>
+        <p><span class="text-muted">Email</span><br /><strong><%= profileUser.email %></strong></p>
+        <a class="btn btn-outline-dark rounded-pill" href="/user/<%= profileUser._id %>/edit">Edit profile</a>
+      </div>
+    <% } %>
+  </section>
+
+  <section class="profile-listings-section">
+    <header class="d-flex flex-wrap align-items-end justify-content-between gap-3">
+      <div>
+        <p class="eyebrow"><%= isOwnProfile ? "Your places" : "Places by this host" %></p>
+        <h2><%= isOwnProfile ? "Your listings" : "Listings" %></h2>
+      </div>
+      <% if (isOwnProfile) { %>
+        <a href="/listings/new" class="btn btn-dark rounded-pill">Create a listing</a>
+      <% } %>
+    </header>
+
+    <% if (userListings.length > 0) { %>
+      <div class="profile-listing-grid">
+        <% userListings.forEach((listing) => { %>
+          <a href="/listings/<%= listing._id %>" class="profile-listing-card">
+            <img
+              src="<%= listing.coverImageUrl || '/images/listing-placeholder.svg' %>"
+              alt="<%= listing.title %>"
+              loading="lazy"
+            />
+            <div>
+              <h3><%= listing.title %></h3>
+              <p><%= listing.location %>, <%= listing.country %></p>
+              <strong>₹<%= listing.price.toLocaleString("en-IN") %> / <%= listing.priceUnit === "person" ? "person" : listing.priceUnit === "service" ? "service" : "night" %></strong>
+            </div>
+          </a>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="profile-empty-state">
+        <i class="fa-regular fa-compass" aria-hidden="true"></i>
+        <h3><%= isOwnProfile ? "Your next chapter starts here" : "No listings to show yet" %></h3>
+        <p><%= isOwnProfile ? "Create your first listing and invite guests to discover it." : "This host has not shared any listings yet." %></p>
+        <% if (isOwnProfile) { %><a href="/listings/new" class="btn btn-dark rounded-pill">Create a listing</a><% } %>
+      </div>
+    <% } %>
+  </section>
+</main>

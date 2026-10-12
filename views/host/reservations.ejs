@@ -1,0 +1,84 @@
+<% layout("/layouts/boilerplate") %>
+<%
+  const dateLabel = (date) => new Date(date).toLocaleDateString("en-IN", {
+    timeZone: "UTC",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+  const formatINR = (minorUnits) => (minorUnits / 100).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  const filters = [
+    ["all", "All"],
+    ["upcoming", "Upcoming"],
+    ["current", "Current"],
+    ["past", "Past"],
+    ["pending", "Pending"],
+    ["cancelled", "Cancelled / expired"],
+    ["refund-required", "Payment reconciliation"],
+  ];
+%>
+
+<main class="host-dashboard" aria-labelledby="hostReservationsHeading">
+  <header class="host-page-header">
+    <div>
+      <p class="eyebrow">Hosting on Wanderlust</p>
+      <h1 id="hostReservationsHeading">Reservations</h1>
+      <p>Bookings associated with your host account. Pending holds are not confirmed.</p>
+    </div>
+    <a class="btn btn-outline-dark rounded-pill px-4" href="/host/dashboard">Host dashboard</a>
+  </header>
+
+  <nav class="host-filter-nav" aria-label="Filter reservations by status">
+    <% filters.forEach(([value, label]) => { %>
+      <a class="<%= filter === value ? 'active' : '' %>" href="/host/reservations?status=<%= value %>" <%= filter === value ? 'aria-current="page"' : '' %>><%= label %></a>
+    <% }); %>
+  </nav>
+
+  <% if (reservations.length === 0) { %>
+    <section class="host-empty-state">
+      <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+      <h2>No reservations in this section</h2>
+      <p>Reservations for your listings will appear here. This page does not include bookings for other hosts.</p>
+      <a class="btn btn-outline-dark rounded-pill px-4" href="/host/listings">View your listings</a>
+    </section>
+  <% } else { %>
+    <section class="host-reservation-list" aria-label="Reservations">
+      <% reservations.forEach((reservation) => { %>
+        <article class="host-reservation-card">
+          <a class="host-reservation-image" href="/host/reservations/<%= reservation._id %>" aria-label="View reservation <%= reservation.bookingReference %>">
+            <img src="<%= reservation.listingImageUrl %>" alt="<%= reservation.listingTitle %>" loading="lazy" />
+          </a>
+          <div class="host-reservation-body">
+            <div class="host-reservation-topline">
+              <span class="host-status-badge host-status-<%= reservation.displayStatus.toLowerCase().replaceAll('_', '-') %>"><%= reservation.displayStatus.replaceAll("_", " ") %></span>
+              <span>Ref. <%= reservation.bookingReference %></span>
+            </div>
+            <h2><a href="/host/reservations/<%= reservation._id %>"><%= reservation.listingTitle %></a></h2>
+            <p class="host-reservation-subline"><%= reservation.listingLocation %> · Guest: <%= reservation.guestName %></p>
+            <div class="host-reservation-summary">
+              <span><%= dateLabel(reservation.checkIn) %> – <%= dateLabel(reservation.checkOut) %></span>
+              <span><%= reservation.guests %> guest<%= reservation.guests === 1 ? "" : "s" %></span>
+              <strong>₹<%= formatINR(reservation.priceSnapshot.subtotalMinor) %></strong>
+            </div>
+            <a class="host-reservation-link" href="/host/reservations/<%= reservation._id %>">View reservation details</a>
+          </div>
+        </article>
+      <% }); %>
+    </section>
+
+    <% if (totalPages > 1) { %>
+      <nav class="listing-pagination" aria-label="Reservation pages">
+        <% if (page > 1) { %>
+          <a class="btn btn-outline-dark rounded-pill" href="/host/reservations?status=<%= filter %>&page=<%= page - 1 %>" rel="prev">Previous</a>
+        <% } %>
+        <span>Page <strong><%= page %></strong> of <%= totalPages %></span>
+        <% if (page < totalPages) { %>
+          <a class="btn btn-outline-dark rounded-pill" href="/host/reservations?status=<%= filter %>&page=<%= page + 1 %>" rel="next">Next</a>
+        <% } %>
+      </nav>
+    <% } %>
+  <% } %>
+</main>

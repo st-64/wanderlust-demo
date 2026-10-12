@@ -1,0 +1,39 @@
+<% layout("/layouts/boilerplate") %>
+
+<section class="listing-form-shell profile-edit-shell">
+  <header class="listing-form-heading">
+    <p class="eyebrow">Your account</p>
+    <h1>Edit your profile</h1>
+    <p>Update how you appear to other Wanderlust members.</p>
+  </header>
+
+  <form method="POST" action="/user/<%= profileUser._id %>/edit" enctype="multipart/form-data" class="listing-editor profile-editor">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <div class="profile-image-edit">
+      <% if (profileUser.profileImage && profileUser.profileImage.url) { %>
+        <img class="profile-avatar" src="<%= profileUser.profileImage.url %>" alt="Current profile photo" data-profile-preview data-avatar-image data-avatar-initial="<%= (profileUser.fullName || profileUser.username).charAt(0).toUpperCase() %>" data-avatar-fallback-class="profile-avatar profile-avatar-fallback" />
+      <% } else { %>
+        <span class="profile-avatar profile-avatar-fallback" data-profile-fallback aria-hidden="true"><%= (profileUser.fullName || profileUser.username).charAt(0).toUpperCase() %></span>
+        <img class="profile-avatar d-none" alt="New profile photo preview" data-profile-preview />
+      <% } %>
+      <div>
+        <label class="form-label fw-semibold" for="profileImage">Profile photo</label>
+        <input id="profileImage" class="form-control" type="file" name="profileImage" accept="image/jpeg,image/png,image/webp" data-profile-image-input />
+        <p class="form-text mb-0">JPG, PNG, or WebP, up to 5 MB.</p>
+        <p class="form-text text-danger" role="status" data-profile-image-error></p>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="fullName">Name shown on your profile</label>
+      <input id="fullName" class="form-control" type="text" name="profile[fullName]" value="<%= profileUser.fullName || '' %>" maxlength="80" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="username">Username</label>
+      <input id="username" class="form-control" type="text" value="<%= profileUser.username %>" disabled />
+      <div class="form-text">Username and email are managed by your sign-in account.</div>
+    </div>
+    <button class="btn btn-dark rounded-pill px-4" type="submit">Save profile</button>
+    <a class="btn btn-link text-dark" href="/user/<%= profileUser._id %>">Cancel</a>
+  </form>
+</section>
+<script src="/js/image-upload.js"></script>

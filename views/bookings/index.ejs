@@ -1,0 +1,89 @@
+<% layout("/layouts/boilerplate") %>
+<%
+  const dateLabel = (date) => new Date(date).toLocaleDateString("en-IN", {
+    timeZone: "UTC",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+  const sectionsToShow = [
+    { id: "upcoming", title: "Upcoming", description: "Your confirmed trips that have not started yet.", bookings: sections.upcoming, empty: "You don't have any upcoming trips yet." },
+    { id: "current", title: "Current", description: "Stays that are happening now.", bookings: sections.current, empty: "You don't have any current trips." },
+    { id: "past", title: "Past", description: "Your completed and previous stays.", bookings: sections.past, empty: "No past trips yet." },
+    { id: "cancelled", title: "Cancelled", description: "Bookings that were cancelled and no longer hold dates.", bookings: sections.cancelled, empty: "You don't have any cancelled bookings." },
+    { id: "updates", title: "Booking updates", description: "Temporary holds and other booking status updates.", bookings: sections.updates, empty: "No booking updates." },
+  ];
+%>
+
+<main class="guest-dashboard" aria-labelledby="myTripsHeading">
+  <header class="guest-dashboard-header">
+    <p class="eyebrow">Your Wanderlust stays</p>
+    <h1 id="myTripsHeading">My trips</h1>
+    <p>Keep track of your stays, booking details, and temporary date holds.</p>
+  </header>
+
+  <nav class="guest-trip-nav" aria-label="My trips sections">
+    <% sectionsToShow.forEach((section) => { %>
+      <a href="#<%= section.id %>"><%= section.title %><span><%= section.bookings.length %></span></a>
+    <% }); %>
+  </nav>
+
+  <% sectionsToShow.forEach((section) => { %>
+    <section class="guest-trip-section" id="<%= section.id %>" aria-labelledby="<%= section.id %>Heading">
+      <div class="guest-trip-section-heading">
+        <div>
+          <h2 id="<%= section.id %>Heading"><%= section.title %></h2>
+          <p><%= section.description %></p>
+        </div>
+      </div>
+
+      <% if (section.bookings.length === 0) { %>
+        <div class="guest-trip-empty">
+          <i class="fa-regular fa-compass" aria-hidden="true"></i>
+          <p><%= section.empty %></p>
+          <% if (section.id === "upcoming") { %>
+            <a class="btn btn-dark rounded-pill" href="/listings">Explore stays</a>
+          <% } %>
+        </div>
+      <% } else { %>
+        <div class="guest-trip-list">
+          <% section.bookings.forEach((booking) => { %>
+            <article class="guest-trip-card">
+              <a class="guest-trip-image-link" href="<%= booking.listingUrl || `/bookings/${booking._id}` %>" aria-label="View <%= booking.listingTitle %>">
+                <img class="guest-trip-image" src="<%= booking.listingImageUrl %>" alt="<%= booking.listingTitle %>" loading="lazy" />
+              </a>
+              <div class="guest-trip-card-body">
+                <div class="guest-trip-card-topline">
+                  <span class="guest-trip-status guest-trip-status-<%= booking.displayStatus.toLowerCase().replaceAll("_", "-") %>"><%= booking.displayStatus.replaceAll("_", " ") %></span>
+                  <span class="guest-trip-reference">Ref. <%= booking.bookingReference %></span>
+                </div>
+                <h3><a href="/bookings/<%= booking._id %>"><%= booking.listingTitle %></a></h3>
+                <p class="guest-trip-location"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> <%= booking.listingLocation %></p>
+                <div class="guest-trip-dates">
+                  <div><span>Check-in</span><strong><%= dateLabel(booking.checkIn) %></strong></div>
+                  <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                  <div><span>Check-out</span><strong><%= dateLabel(booking.checkOut) %></strong></div>
+                </div>
+                <p class="guest-trip-summary">
+                  <%= booking.priceSnapshot.nights %> <%= booking.priceSnapshot.nights === 1 ? "night" : "nights" %>
+                  <span aria-hidden="true">·</span> <%= booking.guests %> <%= booking.guests === 1 ? "guest" : "guests" %>
+                  <span aria-hidden="true">·</span>
+                  ₹<%= (booking.priceSnapshot.subtotalMinor / 100).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %>
+                </p>
+                <div class="guest-trip-actions">
+                  <a class="btn btn-outline-dark rounded-pill" href="/bookings/<%= booking._id %>">View booking</a>
+                  <% if (booking.displayStatus === "PENDING_PAYMENT") { %>
+                    <form method="POST" action="/bookings/<%= booking._id %>/cancel" data-confirm="Your 10-minute date hold will be cancelled and those dates released." data-confirm-title="Cancel this date hold?" data-confirm-label="Cancel hold">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                      <button class="btn btn-link text-danger text-decoration-none" type="submit">Cancel hold</button>
+                    </form>
+                  <% } %>
+                </div>
+              </div>
+            </article>
+          <% }); %>
+        </div>
+      <% } %>
+    </section>
+  <% }); %>
+</main>

@@ -1,0 +1,242 @@
+<% layout("/layouts/boilerplate") %>
+
+<!-- Main Filters Wrapper -->
+<div class="filters-main mt-3 px-2">
+    <button id="slideLeft" class="filter-arrow-btn d-none me-2" type="button" aria-label="Scroll categories left">
+        <i class="fa-solid fa-chevron-left"></i>
+    </button>
+
+    <div id="filters" class="d-none d-md-flex align-items-center overflow-auto hide-scrollbar">
+        <% const homeFilters = [
+            ["Beach", "fa-umbrella-beach"],
+            ["Amazing Pools", "fa-person-swimming"],
+            ["Mountains", "fa-mountain"],
+            ["Heritage", "fa-monument"],
+            ["Camping", "fa-campground"],
+            ["Lake", "fa-water"],
+            ["Countryside", "fa-house-chimney"],
+        ]; %>
+        <% for (const [type, icon] of homeFilters) { %>
+            <a href="/listings?category=Homes&type=<%= encodeURIComponent(type) %>" class="filter <%= currType === type ? 'active-filter' : '' %>">
+                <div><i class="fa-solid <%= icon %>"></i></div>
+                <p><%= type %></p>
+            </a>
+        <% } %>
+    </div>
+
+    <button id="slideRight" class="filter-arrow-btn d-none ms-2" type="button" aria-label="Scroll categories right">
+        <i class="fa-solid fa-chevron-right"></i>
+    </button>
+
+    <button class="mobile-filter-btn d-md-none" type="button" data-bs-toggle="modal" data-bs-target="#filtersModal">
+        <i class="fa-solid fa-sliders"></i> Filters
+    </button>
+
+    <div class="tax-toggle" aria-label="Price tax display">
+        <div class="form-check">
+            <label class="form-check-label" for="taxToggle">Show tax estimate</label>
+            <input id="taxToggle" class="form-check-input" type="checkbox" aria-controls="taxToggleInfo" />
+        </div>
+    </div>
+
+</div>
+<p id="taxToggleInfo" class="tax-info" role="status" hidden>
+    Tax rules are not configured yet. Listed prices remain unchanged.
+</p>
+
+<!-- Mobile Filters Popup Modal -->
+<div class="modal fade" id="filtersModal" tabindex="-1" aria-labelledby="filtersModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold fs-6" id="filtersModalLabel">Explore categories</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mobile-filters-grid">
+                    <% for (const [type, icon] of homeFilters) { %>
+                        <a href="/listings?category=Homes&type=<%= encodeURIComponent(type) %>" class="mobile-filter-item <%= currType === type ? 'active-filter' : '' %>">
+                            <i class="fa-solid <%= icon %>"></i>
+                            <span><%= type %></span>
+                        </a>
+                    <% } %>
+                </div>
+            </div>
+            <div class="modal-footer border-top justify-content-center">
+                <% if (currCategory || currType || currState || currCity) { %>
+                    <a href="/listings" class="btn btn-dark w-100 rounded-pill py-2 fw-bold clear-filter-btn">Clear Filters</a>
+                <% } else { %>
+                    <button type="button" class="btn btn-outline-dark w-100 rounded-pill py-2 fw-bold" data-bs-dismiss="modal">Close</button>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= REGIONAL LISTING SECTIONS ================= -->
+<div id="listings-container" class="px-2 pb-4 mb-4">
+    <% const states = Object.keys(groupedListings); %>
+
+    <% if (states.length === 0) { %>
+        <div class="text-center py-5 px-3">
+            <h4 class="fw-bold text-dark">No matching listings yet</h4>
+            <p class="text-muted mb-3">Try another category or explore all Wanderlust listings.</p>
+            <a href="/listings" class="btn btn-dark rounded-pill px-4">Explore all</a>
+        </div>
+    <% } else { %>
+        <% const sectionLabel = currCategory === 'Experiences' ? 'Experiences in' : currCategory === 'Services' ? 'Services in' : 'Stays in'; %>
+        <% for (let state of states) { %>
+            <div class="listing-location-section">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="fs-5 fw-bold mb-0 text-dark">
+                        <%= sectionLabel %> <%= state %>
+                        <i class="fa-solid fa-chevron-right fs-6 ms-1"></i>
+                    </h2>
+
+                    <div class="scroll-arrows-container gap-2" style="display: none;">
+                        <button class="btn-scroll scroll-left-btn rounded-circle border bg-white shadow-sm" aria-label="Scroll left">
+                            <i class="fa-solid fa-chevron-left fs-8"></i>
+                        </button>
+                        <button class="btn-scroll scroll-right-btn rounded-circle border bg-white shadow-sm" aria-label="Scroll right">
+                            <i class="fa-solid fa-chevron-right fs-8"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="scroll-track d-flex gap-3 overflow-x-auto hide-scrollbar pb-2">
+                    <% for (let listing of groupedListings[state]) { %>
+                        <a href="/listings/<%= listing._id %>" class="listing-link">
+                            <div class="card listing-card border-0">
+                                <div class="position-relative listing-image-wrap">
+                                    <img src="<%= listing.coverImageUrl %>" class="card-img-top rounded-4 object-fit-cover w-100" alt="<%= listing.title %>" loading="lazy" />
+
+                                    <div class="listing-badge position-absolute top-0 start-0 bg-white rounded-pill shadow-sm fw-bold">
+                                        <%= listing.type || listing.category %>
+                                    </div>
+                                </div>
+
+                                <div class="card-body px-0 pt-2 pb-1">
+                                    <div class="d-flex justify-content-between align-items-start gap-2">
+                                        <p class="card-text mb-0 fw-bold listing-title text-dark"><%= listing.title %></p>
+
+                                        <% if (listing.averageRating) { %>
+                                            <span class="listing-rating text-dark fw-medium flex-shrink-0">
+                                                <i class="fa-solid fa-star" aria-hidden="true"></i> <%= listing.averageRating %>
+                                            </span>
+                                        <% } %>
+                                    </div>
+
+                                    <p class="card-text text-muted listing-location mb-0 text-truncate"><%= listing.location %></p>
+
+                                    <p class="card-text listing-price mt-1 mb-0 text-dark">
+                                        <span class="fw-bold">&#8377; <%= listing.price.toLocaleString('en-IN') %></span>
+                                        / <%= listing.priceUnit === 'person' ? 'person' : listing.priceUnit === 'service' ? 'service' : 'night' %>
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                    <% } %>
+                </div>
+            </div>
+        <% } %>
+    <% } %>
+</div>
+
+<% if (totalPages > 1) { %>
+    <nav class="listing-pagination" aria-label="Listing pages">
+        <% if (page > 1) { %>
+            <a class="btn btn-outline-dark rounded-pill" href="/listings?<%= paginationQuery ? `${paginationQuery}&` : '' %>page=<%= page - 1 %>" rel="prev">Previous</a>
+        <% } %>
+        <span>Page <strong><%= page %></strong> of <%= totalPages %></span>
+        <% if (page < totalPages) { %>
+            <a class="btn btn-outline-dark rounded-pill" href="/listings?<%= paginationQuery ? `${paginationQuery}&` : '' %>page=<%= page + 1 %>" rel="next">Next</a>
+        <% } %>
+    </nav>
+<% } %>
+
+<!-- Scripts -->
+<script nonce="<%= cspNonce %>">
+  document.addEventListener("DOMContentLoaded", () => {
+      // Desktop category scrolling
+      const slider = document.getElementById('filters');
+      const slideLeftBtn = document.getElementById('slideLeft');
+      const slideRightBtn = document.getElementById('slideRight');
+
+      function updateCategoryArrows() {
+          if (!slider) return;
+          slideLeftBtn.classList.toggle('d-none', slider.scrollLeft <= 5);
+          slideRightBtn.classList.toggle('d-none', slider.scrollLeft + slider.clientWidth >= slider.scrollWidth - 5);
+      }
+
+      if (slideLeftBtn && slideRightBtn && slider) {
+          slideLeftBtn.addEventListener('click', () => slider.scrollBy({ left: -300, behavior: 'smooth' }));
+          slideRightBtn.addEventListener('click', () => slider.scrollBy({ left: 300, behavior: 'smooth' }));
+          slider.addEventListener('scroll', updateCategoryArrows);
+          window.addEventListener('resize', updateCategoryArrows);
+          updateCategoryArrows();
+      }
+
+      const updateAllSectionArrows = () => {
+          document.querySelectorAll('.listing-location-section').forEach(section => {
+              const track = section.querySelector('.scroll-track');
+              const arrowsContainer = section.querySelector('.scroll-arrows-container');
+              if (!track || !arrowsContainer) return;
+
+              const totalListings = track.querySelectorAll('.listing-link').length;
+
+              // Hide section arrows when the row has too few cards to need scrolling.
+              if (totalListings < 4) {
+                  arrowsContainer.style.setProperty('display', 'none', 'important');
+                  return; // Stop running logic for this section
+              }
+
+              const leftBtn = arrowsContainer.querySelector('.scroll-left-btn');
+              const rightBtn = arrowsContainer.querySelector('.scroll-right-btn');
+
+              const isOverflowing = track.scrollWidth > track.clientWidth + 5;
+
+              if (!isOverflowing) {
+                  arrowsContainer.style.setProperty('display', 'none', 'important');
+              } else {
+                  arrowsContainer.style.setProperty('display', 'flex', 'important');
+              }
+
+              const scrollLeft = track.scrollLeft;
+              const maxScrollLeft = track.scrollWidth - track.clientWidth;
+
+              if (leftBtn) {
+                  if (scrollLeft <= 5) {
+                      leftBtn.classList.add('disabled-arrow');
+                  } else {
+                      leftBtn.classList.remove('disabled-arrow');
+                  }
+              }
+
+              if (rightBtn) {
+                  if (scrollLeft >= maxScrollLeft - 5) {
+                      rightBtn.classList.add('disabled-arrow');
+                  } else {
+                      rightBtn.classList.remove('disabled-arrow');
+                  }
+              }
+          });
+      };
+
+      document.querySelectorAll('.scroll-track').forEach(track => {
+          track.addEventListener('scroll', updateAllSectionArrows);
+      });
+      window.addEventListener('resize', updateAllSectionArrows);
+
+      setTimeout(updateAllSectionArrows, 100);
+
+      document.querySelectorAll('.listing-location-section').forEach(section => {
+          const track = section.querySelector('.scroll-track');
+          const leftBtn = section.querySelector('.scroll-left-btn');
+          const rightBtn = section.querySelector('.scroll-right-btn');
+          if (!track) return;
+
+          leftBtn?.addEventListener('click', () => track.scrollBy({ left: -300, behavior: 'smooth' }));
+          rightBtn?.addEventListener('click', () => track.scrollBy({ left: 300, behavior: 'smooth' }));
+      });
+  });
+</script>

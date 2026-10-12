@@ -1,0 +1,83 @@
+<% layout("/layouts/boilerplate") %>
+<%
+  const formatINR = (minorUnits) => (minorUnits / 100).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+%>
+
+<main class="host-dashboard" aria-labelledby="hostDashboardHeading">
+  <header class="host-page-header">
+    <div>
+      <p class="eyebrow">Hosting on Wanderlust</p>
+      <h1 id="hostDashboardHeading">Host dashboard</h1>
+      <p>A snapshot of your listings and reservations.</p>
+    </div>
+    <a class="btn btn-dark rounded-pill px-4" href="/listings/new">Create a listing</a>
+  </header>
+
+  <section class="host-metrics-grid" aria-label="Hosting summary">
+    <article class="host-metric-card">
+      <span>Total listings</span>
+      <strong><%= summary.totalListings %></strong>
+      <a href="/host/listings">Manage your listings</a>
+    </article>
+    <article class="host-metric-card">
+      <span>Listed inventory</span>
+      <strong><%= summary.activeListings %></strong>
+      <small>All listings are treated as active; the listing model has no inactive status.</small>
+    </article>
+    <article class="host-metric-card">
+      <span>Upcoming confirmed reservations</span>
+      <strong><%= summary.upcomingReservations %></strong>
+      <a href="/host/reservations?status=upcoming">View upcoming</a>
+    </article>
+    <article class="host-metric-card">
+      <span>Current stays</span>
+      <strong><%= summary.currentStays %></strong>
+      <a href="/host/reservations?status=current">View current stays</a>
+    </article>
+    <article class="host-metric-card host-metric-pending">
+      <span>Pending holds</span>
+      <strong><%= summary.pendingHolds %></strong>
+      <small>Not confirmed and not included in gross booking value.</small>
+      <a href="/host/reservations?status=pending">Review pending holds</a>
+    </article>
+    <article class="host-metric-card host-metric-value">
+      <span>Gross booking value</span>
+      <strong>₹<%= formatINR(summary.grossBookingValueMinor) %></strong>
+      <small>Based on <%= summary.grossBookingCount %> confirmed or completed booking<%= summary.grossBookingCount === 1 ? "" : "s" %>; not profit or payout.</small>
+      <a href="/host/reservations">View reservation details</a>
+    </article>
+  </section>
+
+  <% if (summary.totalListings === 0) { %>
+    <section class="host-empty-state">
+      <i class="fa-regular fa-compass" aria-hidden="true"></i>
+      <h2>Start hosting with your first listing</h2>
+      <p>Your listings and reservations will appear here once you share a place or service.</p>
+      <a class="btn btn-dark rounded-pill px-4" href="/listings/new">Create your first listing</a>
+    </section>
+  <% } else { %>
+    <section class="host-tools-grid" aria-label="Host tools">
+      <article class="host-tool-card">
+        <p class="eyebrow">Your inventory</p>
+        <h2>My listings</h2>
+        <p>View, edit, and manage listings you own.</p>
+        <a class="btn btn-outline-dark rounded-pill" href="/host/listings">Manage listings</a>
+      </article>
+      <article class="host-tool-card">
+        <p class="eyebrow">Guest stays</p>
+        <h2>Reservations</h2>
+        <p>Review confirmed stays and pending booking updates.</p>
+        <a class="btn btn-outline-dark rounded-pill" href="/host/reservations">View reservations</a>
+      </article>
+      <article class="host-tool-card host-calendar-note">
+        <p class="eyebrow">Availability</p>
+        <h2>Calendar management is not available yet</h2>
+        <p>Guests can check dates on each listing, but hosts cannot block dates using a calendar yet.</p>
+        <a class="btn btn-outline-dark rounded-pill" href="/host/listings">Open your listings</a>
+      </article>
+    </section>
+  <% } %>
+</main>

@@ -1,0 +1,126 @@
+<% layout("/layouts/boilerplate") %>
+
+<section class="listing-form-shell">
+  <header class="listing-form-heading">
+    <p class="eyebrow">Make room for a new adventure</p>
+    <h1>Create your listing</h1>
+    <p>Share the details guests need to picture their stay.</p>
+  </header>
+
+  <form
+    method="POST"
+    action="/listings"
+    enctype="multipart/form-data"
+    novalidate
+    class="needs-validation listing-editor"
+  >
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <section class="editor-section">
+      <h2>Photos</h2>
+      <p class="text-muted">Choose up to 8 JPG, PNG, or WebP images (8 MB each). Large photos are optimized in your browser before upload. The first photo is your cover.</p>
+      <div class="photo-upload-zone" data-upload-zone>
+        <input
+          class="visually-hidden"
+          id="listingImages"
+          name="listing[images]"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          required
+          data-image-input
+        />
+        <div class="photo-upload-prompt">
+          <span class="photo-upload-icon" aria-hidden="true"><i class="fa-regular fa-images"></i></span>
+          <strong>Add photos of your place</strong>
+          <span>Drag and drop or choose up to 8 photos</span>
+          <label class="btn btn-outline-dark rounded-pill px-4" for="listingImages">Choose photos</label>
+          <span class="small text-muted" data-image-count>No photos selected</span>
+        </div>
+      </div>
+      <p class="form-text text-danger" role="status" data-upload-error></p>
+      <div class="photo-preview-grid" data-image-previews aria-live="polite"></div>
+    </section>
+
+    <section class="editor-section">
+      <h2>About this place</h2>
+      <div class="mb-3">
+        <label for="listingTitle" class="form-label">Title</label>
+        <input id="listingTitle" name="listing[title]" class="form-control" maxlength="120" minlength="3" required />
+        <div class="invalid-feedback">Add a title between 3 and 120 characters.</div>
+      </div>
+      <div class="mb-3">
+        <label for="listingDescription" class="form-label">Description</label>
+        <textarea id="listingDescription" name="listing[description]" class="form-control" rows="5" minlength="10" maxlength="5000" required></textarea>
+        <div class="invalid-feedback">Add at least 10 characters describing your place.</div>
+      </div>
+      <div class="row">
+        <div class="mb-3 col-md-6">
+          <label for="listingCategory" class="form-label">Category</label>
+          <select id="listingCategory" name="listing[category]" class="form-select" required>
+            <option value="Homes">Home</option>
+            <option value="Experiences">Experience</option>
+            <option value="Services">Service</option>
+          </select>
+        </div>
+        <div class="mb-3 col-md-6">
+          <label for="listingType" class="form-label">Type</label>
+          <select id="listingType" name="listing[type]" class="form-select">
+            <option value="">Choose a type (optional)</option>
+            <% for (const type of ["Beach", "Heritage", "Lake", "Camping", "Countryside", "Amazing Pools", "Mountains", "Culture", "Food", "Nature", "Chef", "Photography", "Transport", "Wellness"]) { %>
+              <option value="<%= type %>"><%= type %></option>
+            <% } %>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="editor-section">
+      <h2>Where guests will go</h2>
+      <div class="row">
+        <div class="mb-3 col-md-8">
+          <label for="listingLocation" class="form-label">Location</label>
+          <input id="listingLocation" name="listing[location]" class="form-control" placeholder="Jaipur, Rajasthan" minlength="2" required />
+          <div class="invalid-feedback">Enter a location that can be found on the map.</div>
+        </div>
+        <div class="mb-3 col-md-4">
+          <label for="listingCountry" class="form-label">Country</label>
+          <input id="listingCountry" name="listing[country]" class="form-control" placeholder="India" required />
+          <div class="invalid-feedback">Enter a country.</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="mb-3 col-md-6">
+          <label for="listingCity" class="form-label">City <span class="text-muted">(optional)</span></label>
+          <input id="listingCity" name="listing[city]" class="form-control" />
+        </div>
+        <div class="mb-3 col-md-6">
+          <label for="listingState" class="form-label">State or region <span class="text-muted">(optional)</span></label>
+          <input id="listingState" name="listing[state]" class="form-control" />
+        </div>
+      </div>
+    </section>
+
+    <section class="editor-section">
+      <h2>Pricing</h2>
+      <div class="row">
+        <div class="mb-3 col-md-6">
+          <label for="listingPrice" class="form-label">Price (INR)</label>
+          <input id="listingPrice" name="listing[price]" type="number" min="0" step="1" class="form-control" required />
+          <div class="invalid-feedback">Enter a non-negative price.</div>
+        </div>
+        <div class="mb-3 col-md-6">
+          <label for="listingPriceUnit" class="form-label">Price applies per</label>
+          <select id="listingPriceUnit" name="listing[priceUnit]" class="form-select" required>
+            <option value="night">Night</option>
+            <option value="person">Person</option>
+            <option value="service">Service</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <button class="btn btn-dark rounded-pill px-5 py-2" type="submit">Create listing</button>
+  </form>
+</section>
+
+<script src="/js/image-upload.js"></script>

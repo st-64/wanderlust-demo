@@ -1,0 +1,17 @@
+<% if (success && success.length > 0) { %>
+  <div class="flash-toast alert alert-dismissible fade show" role="alert">
+    <div class="d-flex align-items-center">
+      <i class="fa-solid fa-circle-check text-success fs-5 me-2"></i>
+      <span><%= success %></span>
+    </div>
+    <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } else if (error && error.length > 0) { %>
+  <div class="flash-toast alert alert-dismissible fade show" role="alert">
+    <div class="d-flex align-items-center">
+      <i class="fa-solid fa-circle-exclamation text-danger fs-5 me-2"></i>
+      <span><%= error %></span>
+    </div>
+    <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
