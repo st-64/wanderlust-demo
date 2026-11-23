@@ -65,7 +65,7 @@ module.exports.create = async (req, res) => {
         "success",
         config.razorpay.enabled
             ? "Dates held for 10 minutes. Continue to checkout; this booking is not confirmed until payment is verified."
-            : "Dates held for 10 minutes. Online payment is not configured, so this booking is not confirmed."
+            : "Dates held for 10 minutes. Portfolio Demo Mode has online payments disabled, so this booking is not confirmed."
     );
     res.redirect(`/bookings/${booking._id}`);
 };
