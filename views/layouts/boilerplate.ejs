@@ -35,6 +35,12 @@
   >
     <%- include("../includes/navbar.ejs") %>
 
+    <% if (portfolioDemoMode) { %>
+      <div class="container mt-3">
+        <div class="alert alert-warning mb-0" role="status">Portfolio Demo Mode - Live Payments Disabled</div>
+      </div>
+    <% } %>
+
     <div class="container">
       <%- include("../includes/flash.ejs") %> <%- body %>
     </div>

@@ -13,11 +13,11 @@ module.exports = (req, res, next) => {
     res.locals.cspNonce = nonce;
     const policy = [
         "default-src 'self'",
-        `script-src 'self' 'nonce-${nonce}' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://api.mapbox.com https://checkout.razorpay.com`,
+        `script-src 'self' 'nonce-${nonce}' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://api.mapbox.com https://checkout.razorpay.com https://lumberjack.razorpay.com`,
         "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://api.mapbox.com https://fonts.googleapis.com",
         "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://api.mapbox.com",
         "font-src 'self' data: https://cdnjs.cloudflare.com https://fonts.gstatic.com",
-        "connect-src 'self' https://api.mapbox.com https://events.mapbox.com https://*.tiles.mapbox.com https://*.mapbox.com https://api.razorpay.com https://*.razorpay.com",
+        "connect-src 'self' https://api.mapbox.com https://events.mapbox.com https://*.tiles.mapbox.com https://*.mapbox.com https://api.razorpay.com https://checkout.razorpay.com https://lumberjack.razorpay.com https://*.razorpay.com",
         "frame-src https://api.razorpay.com https://checkout.razorpay.com https://*.razorpay.com",
         "worker-src 'self' blob:",
         "child-src 'self' blob:",

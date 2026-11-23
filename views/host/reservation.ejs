@@ -24,7 +24,7 @@
       <span class="host-status-badge host-status-<%= reservation.displayStatus.toLowerCase().replaceAll('_', '-') %>"><%= reservation.displayStatus.replaceAll("_", " ") %></span>
     </header>
     <% if (reservation.displayStatus === "REFUND_REQUIRED") { %>
-      <p class="host-detail-note">This stay is not confirmed. It is excluded from gross booking value while payment reconciliation is required.</p>
+      <p class="host-detail-note" role="status"><strong>Refund reconciliation required.</strong> This stay is not confirmed and is excluded from gross booking value. Manual provider and refund reconciliation is required; no refund status is assumed.</p>
     <% } %>
 
     <div class="host-detail-grid">

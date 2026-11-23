@@ -21,6 +21,12 @@ function requireSameOrigin(req, res, next) {
 module.exports.requireSameOrigin = requireSameOrigin;
 
 module.exports.startCheckout = async (req, res) => {
+    if (!razorpay.isConfigured()) {
+        return res.status(503).json({
+            status: "payments_disabled",
+            message: "Portfolio Demo Mode - Live Payments Disabled. This booking cannot be paid or confirmed online.",
+        });
+    }
     const order = await paymentService.startCheckout(
         req.params.bookingId,
         req.user._id
@@ -29,6 +35,12 @@ module.exports.startCheckout = async (req, res) => {
 };
 
 module.exports.verifyCheckout = async (req, res) => {
+    if (!razorpay.isConfigured()) {
+        return res.status(503).json({
+            status: "payments_disabled",
+            message: "Portfolio Demo Mode - Live Payments Disabled. Payment verification is unavailable.",
+        });
+    }
     const { error, value } = paymentVerificationSchema.validate(req.body, { abortEarly: false });
     if (error) {
         throw new ExpressError(400, "The payment response was incomplete or invalid.");

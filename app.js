@@ -84,6 +84,7 @@ app.use((req, res, next) => {
     res.locals.currUser = req.user;
     res.locals.mapToken = config.mapToken;
     res.locals.paymentCheckoutEnabled = config.razorpay.enabled;
+    res.locals.portfolioDemoMode = !config.razorpay.enabled;
     next();
 });
 

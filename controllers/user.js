@@ -24,8 +24,24 @@ module.exports.signup = async (req, res, next) => {
             res.redirect("/listings");
         });
     } catch (error) {
-        if (error.name === "UserExistsError" || error.code === 11000) {
-            req.flash("error", "That username or email is already in use.");
+        if (error.name === "UserExistsError") {
+            req.flash("error", "That username is already in use.");
+            return res.redirect("/signup");
+        }
+        if (error.code === 11000) {
+            const duplicateField = error.keyPattern?.email
+                ? "email"
+                : error.keyPattern?.username
+                    ? "username"
+                    : null;
+            req.flash(
+                "error",
+                duplicateField === "email"
+                    ? "That email address is already in use."
+                    : duplicateField === "username"
+                        ? "That username is already in use."
+                        : "That username or email is already in use."
+            );
             return res.redirect("/signup");
         }
         next(error);

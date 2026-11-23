@@ -35,7 +35,7 @@ const config = {
             && process.env.RAZORPAY_WEBHOOK_SECRET
         ),
     },
-    trustProxy: process.env.TRUST_PROXY === "true",
+    trustProxy: process.env.TRUST_PROXY === "true" || process.env.TRUST_PROXY === "1",
     cspMode: process.env.CSP_MODE || "report-only",
     rateLimits: {
         windowMs: positiveInteger(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000, "RATE_LIMIT_WINDOW_MS"),

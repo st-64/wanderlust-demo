@@ -53,7 +53,7 @@
           </a>
           <div class="host-reservation-body">
             <div class="host-reservation-topline">
-              <span class="host-status-badge host-status-<%= reservation.displayStatus.toLowerCase().replaceAll('_', '-') %>"><%= reservation.displayStatus.replaceAll("_", " ") %></span>
+              <span class="host-status-badge host-status-<%= reservation.displayStatus.toLowerCase().replaceAll('_', '-') %>"><%= reservation.displayStatus === "REFUND_REQUIRED" ? "Refund reconciliation required" : reservation.displayStatus.replaceAll("_", " ") %></span>
               <span>Ref. <%= reservation.bookingReference %></span>
             </div>
             <h2><a href="/host/reservations/<%= reservation._id %>"><%= reservation.listingTitle %></a></h2>

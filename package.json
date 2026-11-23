@@ -7,6 +7,9 @@
     "start": "node app.js",
     "dev": "node app.js",
     "seed": "node init/index.js",
+    "seed:safe": "node scripts/seedSafeDemo.js",
+    "db:indexes": "node scripts/verifyIndexes.js",
+    "verify:deploy": "node scripts/verifyDeploy.js",
     "test": "node --test"
   },
   "keywords": [],
