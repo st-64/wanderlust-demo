@@ -1,5 +1,10 @@
 const mapElement = document.getElementById("map");
 if (mapElement && mapElement.dataset.token && window.mapboxgl) {
+    Object.defineProperty(mapboxgl.config, "EVENTS_URL", {
+        configurable: true,
+        value: null,
+    });
+
     const defaultCoordinates = [77.209, 28.6139];
     let geometry;
     try {
