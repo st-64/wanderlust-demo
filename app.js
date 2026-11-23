@@ -36,6 +36,10 @@ app.set("views", path.join(__dirname, "views"));
 app.set("trust proxy", config.trustProxy ? 1 : false);
 app.disable("x-powered-by");
 app.use(securityHeaders);
+app.get("/health", (req, res) => {
+    const databaseReady = mongoose.connection.readyState === 1;
+    res.status(databaseReady ? 200 : 503).json({ status: databaseReady ? "ok" : "unavailable" });
+});
 app.use(express.urlencoded({ extended: true, limit: "32kb" }));
 app.use(methodOverride("_method"));
 app.engine("ejs", ejsMate);
@@ -101,11 +105,6 @@ app.use("/listings/:id/reviews", ReviewRoute);
 app.use("/bookings", BookingRoute);
 app.use("/host", HostRoute);
 app.use("/", UserRoute);
-
-app.get("/health", (req, res) => {
-    const databaseReady = mongoose.connection.readyState === 1;
-    res.status(databaseReady ? 200 : 503).json({ status: databaseReady ? "ok" : "unavailable" });
-});
 
 app.all(/(.*)/, (req, res, next) => {
     next(new ExpressError(404, "Page Not Found!"));
